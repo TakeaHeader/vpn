@@ -2,17 +2,18 @@ package proxy
 
 import (
 	"context"
+	"fmt"
 	"game/proxy/sys"
 	"log"
 	"os/signal"
 	"syscall"
 )
 
-func NewModeServer(mode string, addr string, port string) {
+func NewModeServer(mode string, addr string, port int) {
 	baseCtx, stop := SignalBackground()
 	defer stop()
-	SetProxySetting()
 	if "client" == mode {
+		SetProxySetting(fmt.Sprintf("%s:%d", "127.0.0.1", port))
 		NewHttpsProxyClient(baseCtx, addr, port)
 	}
 	if "server" == mode {
@@ -20,8 +21,8 @@ func NewModeServer(mode string, addr string, port string) {
 	}
 }
 
-func SetProxySetting() error {
-	if err := sys.SetGlobalProxy("127.0.0.1:9999", "<local>"); err != nil {
+func SetProxySetting(server string) error {
+	if err := sys.SetGlobalProxy(server, "<local>"); err != nil {
 		log.Printf("set Proxy Setting failed ")
 		return err
 	}

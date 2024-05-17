@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-func NewHttpsProxyClient(context context.Context, serAddr string, port string) error {
+func NewHttpsProxyClient(context context.Context, serAddr string, port int) error {
 	client := Client{add: serAddr}
-	server := &http.Server{Addr: port, Handler: client}
+	server := &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: client}
 	go func() {
 		<-context.Done()
 		server.Shutdown(context)

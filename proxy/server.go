@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func NewHttpsProxyServer(context context.Context, port string) error {
-	ln, err := net.Listen("tcp", port)
+func NewHttpsProxyServer(context context.Context, port int) error {
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
 	}

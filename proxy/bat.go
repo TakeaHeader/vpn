@@ -66,17 +66,22 @@ func (bat *Bat) Encrypt() []byte {
 		log.Printf("encrypt err %v", err)
 	}
 	buffer := make([]byte, 0)
+	buffer = binary.BigEndian.AppendUint16(buffer, Magic)
 	buffer = binary.BigEndian.AppendUint32(buffer, uint32(len(encrypt)))
 	buffer = append(buffer, []byte(encrypt)...)
 	return buffer
 }
 
 func DecryptBat(r io.Reader) (*Bat, error) {
-	length := make([]byte, 4)
+	length := make([]byte, 6)
 	if _, err := io.ReadFull(r, length); err != nil {
 		return nil, err
 	}
-	len := binary.BigEndian.Uint32(length)
+	magic := binary.BigEndian.Uint16(length[:2])
+	if magic != Magic {
+		return nil, ErrParseBuffer
+	}
+	len := binary.BigEndian.Uint32(length[2:])
 	encryptBuf := make([]byte, len)
 	if _, err := io.ReadFull(r, encryptBuf); err != nil {
 		return nil, err
