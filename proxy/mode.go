@@ -9,13 +9,14 @@ import (
 )
 
 func NewModeServer(mode string, addr string, port string) {
-	SignalBackground()
+	baseCtx, stop := SignalBackground()
+	defer stop()
 	SetProxySetting()
 	if "client" == mode {
-		NewHttpsProxyClient(addr, port)
+		NewHttpsProxyClient(baseCtx, addr, port)
 	}
 	if "server" == mode {
-		NewHttpsProxyServer(port)
+		NewHttpsProxyServer(baseCtx, port)
 	}
 }
 
@@ -43,12 +44,12 @@ func ClearProxySetting() error {
 	return nil
 }
 
-func SignalBackground() (ctx context.Context, stop context.CancelFunc) {
+func SignalBackground() (context.Context, context.CancelFunc) {
 	baseCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
 	go func() {
 		<-baseCtx.Done()
 		log.Printf("close Proxy Server ")
 		ClearProxySetting()
 	}()
-	return ctx, stop
+	return baseCtx, stop
 }

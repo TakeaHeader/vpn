@@ -14,7 +14,7 @@ import (
 func PipeThenClose(src, dst net.Conn) {
 	defer dst.Close()
 	for {
-		src.SetReadDeadline(time.Now().Add(time.Second * 3))
+		src.SetReadDeadline(time.Now().Add(time.Second * 5))
 		buf := make([]byte, 1024*32)
 		n, err := src.Read(buf)
 		if n > 0 {

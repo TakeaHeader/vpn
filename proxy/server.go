@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -8,25 +9,36 @@ import (
 	"time"
 )
 
-func NewHttpsProxyServer(port string) error {
+func NewHttpsProxyServer(context context.Context, port string) error {
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
 		return err
 	}
-	for {
-		client, err := ln.Accept()
-		if err != nil {
-			log.Printf(fmt.Sprintf("%s,%v", "accept  failed", err))
-			continue
+	con := make(chan net.Conn)
+	go func() {
+		for {
+			client, err := ln.Accept()
+			if err != nil {
+				log.Printf(fmt.Sprintf("%s,%v", "accept  failed", err))
+				continue
+			}
+			con <- client
 		}
-		go handleConn(client)
+	}()
+	for {
+		select {
+		case <-context.Done():
+			return nil
+		case client := <-con:
+			go handleConn(client)
+		}
 	}
 }
 
 func handleConn(client net.Conn) {
 	remote, err := onHandshake(client)
 	if err != nil {
-		log.Printf(fmt.Sprintf("%s,%v", "server handshake failed", err))
+		log.Printf(fmt.Sprintf("%s,%v", "handshake failed", err))
 		return
 	}
 	clientConn := BatConn{client}

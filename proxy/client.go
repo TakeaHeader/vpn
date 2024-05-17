@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -10,9 +11,13 @@ import (
 	"time"
 )
 
-func NewHttpsProxyClient(serAddr string, port string) error {
+func NewHttpsProxyClient(context context.Context, serAddr string, port string) error {
 	client := Client{add: serAddr}
 	server := &http.Server{Addr: port, Handler: client}
+	go func() {
+		<-context.Done()
+		server.Shutdown(context)
+	}()
 	return server.ListenAndServe()
 }
 
@@ -30,16 +35,17 @@ func (c Client) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	proxyServer, err := handshake(host, c.add)
 	if err != nil {
-		log.Printf("handshake  failed: %v ", err)
+		log.Printf("handshake failed: %v ", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	log.Printf("proxy: %s ", host)
+	remote := BatConn{proxyServer}
 	if "CONNECT" == method {
 		writer.WriteHeader(http.StatusOK)
 	} else {
 		//---写请求
-		err = request.WriteProxy(proxyServer)
+		err = request.WriteProxy(remote)
 		if err != nil {
 			log.Printf("proxy err: %v ", err)
 			return
@@ -52,7 +58,6 @@ func (c Client) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	remote := BatConn{proxyServer}
 	go PipeThenClose(remote, client)
 	PipeThenClose(client, remote)
 }
