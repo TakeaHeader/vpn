@@ -9,18 +9,18 @@ http https 代理工具
 ## 开始使用
 #### 服务端
 `
-./proxy -mode=server -port=:8888
+./proxy -mode=server -port=8888
 `
 
 #### 客户端
 `
-./proxy -mode=server -port=:9999 -addr=127.0.0.1:8888
+./proxy -mode=server -port=9999 -addr=127.0.0.1:8888
 `
 
 
 `
 -mode 运行方式 server client 
--port 侦听端口 端口请带:
+-port 侦听端口 例如 8888 9999
 -addr 服务器地址 mode 为client需配置此参数
 `
 
