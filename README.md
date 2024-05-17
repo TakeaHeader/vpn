@@ -31,4 +31,4 @@ http https 代理工具
 `
 
 ## 截图
-![截图](/screenshot.png "截图")
+![截图](./screenshot.png "截图")
