@@ -10,7 +10,7 @@ import (
 func main() {
 	mode := flag.String("mode", "", "set run mode")
 	addr := flag.String("addr", "", "set server addr")
-	port := flag.String("port", "", "set lisener port ")
+	port := flag.Int("port", 0, "set listener port ")
 	flag.Parse()
 	if len(strings.TrimSpace(*mode)) == 0 {
 		log.Fatalf("mode 参数必须")
@@ -21,8 +21,8 @@ func main() {
 	if *mode == "client" && len(strings.TrimSpace(*addr)) == 0 {
 		log.Fatalf("mode 'client' addr 参数必须")
 	}
-	if *port == "" {
-		log.Fatalf("mode port 参数必须")
+	if *port <= 0 {
+		log.Fatalf("mode port 参数必须或参数不合法")
 	}
 	proxy.NewModeServer(*mode, *addr, *port)
 }

@@ -3,7 +3,6 @@ package proxy
 import (
 	"encoding/binary"
 	"errors"
-	gox "game/utils"
 	"io"
 	"log"
 )
@@ -60,15 +59,14 @@ func (bat *Bat) toByte() []byte {
 }
 
 func (bat *Bat) Encrypt() []byte {
-	encrypt, err := gox.EncryptByAes(bat.toByte())
+	encrypt, err := EncryptByAes(bat.toByte())
 	if err != nil {
-		encrypt = ""
 		log.Printf("encrypt err %v", err)
 	}
 	buffer := make([]byte, 0)
 	buffer = binary.BigEndian.AppendUint16(buffer, Magic)
 	buffer = binary.BigEndian.AppendUint32(buffer, uint32(len(encrypt)))
-	buffer = append(buffer, []byte(encrypt)...)
+	buffer = append(buffer, encrypt...)
 	return buffer
 }
 
@@ -86,7 +84,7 @@ func DecryptBat(r io.Reader) (*Bat, error) {
 	if _, err := io.ReadFull(r, encryptBuf); err != nil {
 		return nil, err
 	}
-	raw, err := gox.DecryptByAes(string(encryptBuf))
+	raw, err := DecryptByAes(encryptBuf)
 	if err != nil {
 		log.Printf("encrypt err %v", err)
 		return nil, err
@@ -156,4 +154,14 @@ func ReadBat(r io.Reader) (*Bat, error) {
 	}
 	bat := newBat(version, CMD(cmd), packet)
 	return bat, nil
+}
+
+func EncryptByAes(buf []byte) ([]byte, error) {
+	//TODO
+	return nil, nil
+}
+
+func DecryptByAes(buf []byte) ([]byte, error) {
+	//TODO
+	return nil, nil
 }
